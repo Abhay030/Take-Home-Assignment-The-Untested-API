@@ -236,3 +236,29 @@ describe('taskService.completeTask', () => {
     expect(taskService.completeTask(task.id).priority).toBe('high');
   });
 });
+
+describe('taskService.assignTask', () => {
+  beforeEach(() => taskService._reset());
+
+  test('stores the assignee on the task and returns the updated task', () => {
+    const task = taskService.create({ title: 'x' });
+    const assigned = taskService.assignTask(task.id, 'Gungun');
+    expect(assigned.assignee).toBe('Gungun');
+    expect(taskService.findById(task.id).assignee).toBe('Gungun');
+  });
+
+  test('trims whitespace from the assignee', () => {
+    const task = taskService.create({ title: 'x' });
+    expect(taskService.assignTask(task.id, '  Gungun  ').assignee).toBe('Gungun');
+  });
+
+  test('reassigning overwrites the previous assignee', () => {
+    const task = taskService.create({ title: 'x' });
+    taskService.assignTask(task.id, 'first');
+    expect(taskService.assignTask(task.id, 'second').assignee).toBe('second');
+  });
+
+  test('returns null for an unknown id', () => {
+    expect(taskService.assignTask('nope', 'someone')).toBeNull();
+  });
+});

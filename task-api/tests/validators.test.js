@@ -1,4 +1,4 @@
-const { validateCreateTask, validateUpdateTask } = require('../src/utils/validators');
+const { validateCreateTask, validateUpdateTask, validateAssignTask } = require('../src/utils/validators');
 
 describe('validateCreateTask', () => {
   test('accepts a valid minimal task', () => {
@@ -95,5 +95,28 @@ describe('validateUpdateTask', () => {
 
   test.skip('rejects an empty-string priority', () => {
     expect(validateUpdateTask({ priority: '' })).toMatch(/priority must be one of/);
+  });
+});
+
+describe('validateAssignTask', () => {
+  test('accepts a non-empty string assignee', () => {
+    expect(validateAssignTask({ assignee: 'Gungun' })).toBeNull();
+  });
+
+  test('rejects a missing assignee', () => {
+    expect(validateAssignTask({})).toMatch(/assignee must be a non-empty string/);
+  });
+
+  test('rejects a missing body', () => {
+    expect(validateAssignTask(undefined)).toMatch(/assignee must be a non-empty string/);
+  });
+
+  test('rejects an empty or whitespace-only assignee', () => {
+    expect(validateAssignTask({ assignee: '' })).toMatch(/assignee must be a non-empty string/);
+    expect(validateAssignTask({ assignee: '   ' })).toMatch(/assignee must be a non-empty string/);
+  });
+
+  test('rejects a non-string assignee', () => {
+    expect(validateAssignTask({ assignee: 42 })).toMatch(/assignee must be a non-empty string/);
   });
 });

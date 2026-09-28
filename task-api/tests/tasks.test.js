@@ -36,6 +36,7 @@ describe('GET /tasks', () => {
       priority: 'medium',
       dueDate: null,
       completedAt: null,
+      assignee: null,
       createdAt: expect.any(String),
     });
     const listed = await request(app).get('/tasks');
@@ -184,6 +185,12 @@ describe('POST /tasks', () => {
     expect(res.status).toBe(201);
     expect(res.body.foo).toBeUndefined();
     expect(res.body.completedAt).toBeNull();
+  });
+
+  test('assignee cannot be set through task creation', async () => {
+    const res = await request(app).post('/tasks').send({ title: 'x', assignee: 'hacker' });
+    expect(res.status).toBe(201);
+    expect(res.body.assignee).toBeNull();
   });
 
   test('returns 400 when no body is sent', async () => {
@@ -337,6 +344,59 @@ describe('PATCH /tasks/:id/complete', () => {
     const res = await request(app).patch(`/tasks/${task.id}/complete`);
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('done');
+  });
+});
+
+describe('PATCH /tasks/:id/assign', () => {
+  let task;
+
+  beforeEach(async () => {
+    taskService._reset();
+    task = await createTask({ title: 'assign me' });
+  });
+
+  test('assigns a person to the task and returns the updated task', async () => {
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: 'Gungun' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ id: task.id, title: 'assign me', assignee: 'Gungun' });
+    const listed = await request(app).get('/tasks');
+    expect(listed.body[0].assignee).toBe('Gungun');
+  });
+
+  test('returns 404 for an unknown id', async () => {
+    const res = await request(app)
+      .patch('/tasks/does-not-exist/assign')
+      .send({ assignee: 'Gungun' });
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'Task not found' });
+  });
+
+  test('rejects an empty-string assignee with 400', async () => {
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: '' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/assignee/);
+  });
+
+  test('rejects a whitespace-only assignee with 400', async () => {
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: '   ' });
+    expect(res.status).toBe(400);
+  });
+
+  test('rejects a missing assignee with 400', async () => {
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({});
+    expect(res.status).toBe(400);
+  });
+
+  test('rejects a non-string assignee with 400', async () => {
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: 42 });
+    expect(res.status).toBe(400);
+  });
+
+  test('reassigning a task overwrites the previous assignee', async () => {
+    await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: 'first' }).expect(200);
+    const res = await request(app).patch(`/tasks/${task.id}/assign`).send({ assignee: 'second' });
+    expect(res.status).toBe(200);
+    expect(res.body.assignee).toBe('second');
   });
 });
 
