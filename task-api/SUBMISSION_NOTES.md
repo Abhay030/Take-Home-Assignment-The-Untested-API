@@ -1,5 +1,9 @@
 # Submission Notes
 
+**Live demo:** https://task-api-hmrq.onrender.com — quick check: `GET /tasks/stats`.
+(Free tier: the service sleeps after ~15 min idle and takes ~30–60s to wake on the next
+request; the in-memory store resets on restart, per the assignment's design.)
+
 ## Test coverage (Day 1 deliverable)
 
 `npm test` → **111 tests: 101 passed, 10 skipped, 0 failed**.
