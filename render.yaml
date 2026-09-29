@@ -5,7 +5,6 @@ services:
     name: task-api
     env: node
     repo: https://github.com/Abhay030/Take-Home-Assignment-The-Untested-API
-    branch: solution
     rootDir: task-api
     buildCommand: npm install
     startCommand: npm start
