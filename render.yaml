@@ -1,0 +1,13 @@
+# Render Blueprint — one-click deployment of the Task API
+# Dashboard -> New + -> Blueprint -> pick this repo -> Apply
+services:
+  - type: web
+    name: task-api
+    env: node
+    repo: https://github.com/Abhay030/Take-Home-Assignment-The-Untested-API
+    branch: solution
+    rootDir: task-api
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /tasks/stats
